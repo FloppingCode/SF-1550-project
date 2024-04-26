@@ -1,6 +1,3 @@
-import hhsolver.m
-
-% Define the function for S0(x, y)
 S0 = @(x, y) cos(20*(x.^2 + y.^2)) .* exp(-1000*(x.^2 + y.^2).^2);
 
 % Steg 1: Beräkna eta mha trapetsregeln i 2D
