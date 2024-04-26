@@ -1,11 +1,21 @@
 S0 = @(x, y) cos(20*(x.^2 + y.^2)) .* exp(-1000*(x.^2 + y.^2).^2);
 
 % Steg 1: Beräkna eta mha trapetsregeln i 2D
-x_min = -10; x_max = 10;
-y_min = -10; y_max = 10;
 num_points = 1000;
-integrand = @(x, y) S0(x, y) .* cos(19 * x);
-eta = trapets2d(integrand, x_min, x_max, y_min, y_max, num_points);
+M = 10;
+alpha_list = linspace(0, 2*pi, M);
+eta_values = zeros(M, 1);
+x_min = -0.5; x_max = 0.5;
+y_min = -0.5; y_max = 0.5;
+
+for i = 1:M
+    alpha = alpha_list(i);
+    integrand = @(x, y) S0(x, y) .* cos(omega * (x * cos(alpha) + y * sin(alpha)));
+    eta_values(i) = trapets2d(integrand, x_min, x_max, y_min, y_max, num_points);
+end
+
+disp(eta_values);
+
 
 % Steg 2: Beräkna g mha hhsolver
 omega = 19;
