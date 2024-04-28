@@ -51,8 +51,9 @@ v_c = @(x,y, alpha) cos(w*(x.*cos(alpha) + y.*sin(alpha)));
 
 [x, y, a] = gaussnewton(omega, eta_values, Ic_list, alpha_list, x_tilde, y_tilde, a_tilde);
 
+fprintf('x = ', x);
+fprintf('y = ', y);
 fprintf('a = ', a);
-fprintf('x = ', x_0);
-fprintf('y = ', y_0);
+
 
 %Fortsätt... 
