@@ -1,59 +1,101 @@
-S0 = @(x, y) cos(20*(x.^2 + y.^2)) .* exp(-1000*(x.^2 + y.^2).^2);
-
-% Steg 1: Beräkna eta mha trapetsregeln i 2D
-format long; 
-num_points = 500;
-M = 10;
-alpha_list = linspace(0, 2*pi, M);
-eta_values = zeros(M, 1);
-x_min = -1; x_max = 1;
-y_min = -1; y_max = 1;
+%% Uppgift 3.1: Beräkna η
+format long;
 omega = 19;
 
-for i = 1:M
-    alpha = alpha_list(i);
-    integrand = @(x, y) S0(x, y) .* cos(omega * (x * cos(alpha) + y * sin(alpha)));
-    eta_values(i) = trapets2d(integrand, x_min, x_max, y_min, y_max, num_points);
+S0 = @(x,y) cos(20.*sqrt(x.^2+y.^2)).*exp(-1000.*(x.^2+y.^2));
+vc = @(x,y,a) cos(omega*(x.*cos(a) + y.*sin(a)));
+f2 = @(x, a) cos(a*x);
+integrand = @(x,y,a) S0(x,y).*f2(x, a);
+
+for a = linspace(0, 2*pi, 5) 
+    eta = trapets2d(integrand, -0.5,0.5,-0.5,0.5, 500);
+    %disp(eta)
 end
 
-%disp(eta_values);
+%% Uppgift 3.2: Beräkna g
 
-% Steg 2: Beräkna g mha hhsolver
-omega = 19;
-N = 400;
-a = 10; 
-x0 = 0.5; 
-y0 = 0.2;
+N = 500;
+xs  = 0.6;
+ys  = 0.2;
+a = 10;
 
-S = @(x, y) a * S0(x - x0, y - y0);
-[B, Sol] = hhsolver(omega, S, N);
-g = B.un;
+S = @(x,y) a * S0(x-x0,y-ys);
 
-% Steg 3.1: Beräkna I_c mha Simpson
-M = 10;
-alpha_list = linspace(0, 2*pi, M)';
-Ic_list = zeros(M, 1);
+[Bound,Sol]=hhsolver(w,S,N); 
+g = Bound.un;
 
+%disp(g)
+
+% 3.3a: Beräkna Ic mha numerisk integration
+% Definiera funktioner
+S0 = @(x,y) cos(20.*sqrt(x.^2+y.^2)).*exp(-1000.*(x.^2+y.^2));
+vc = @(x,y,alpha) cos(omega*(x.*cos(alpha) + y.*sin(alpha)));
+f2 = @(x, alpha) cos(alpha*x);
+
+integrand = @(x, y) f2(x, alpha) .* S0(x, y);
+
+M = 13;
+aa_vals = linspace(0, 2*pi, M)';
+ic_vals = zeros(M, 1);
 for i = 1:M
-    Ic_list(i) = simpson_ic(B.x, B.y, g, alpha_list(i), omega, B.s);
+    ic_vals(i) = simpson(Bound.x, Bound.y, g, aa_vals(i), omega, Bound.s);
 end
 
+eta = trapets2d(integrand, -0.05, 0.05, -0.05, 0.05, 700);
 
-%disp(Ic_values);
+% Anpassa med Gauss-Newton
+x0 = xs + 0.03;
+y0 = ys - 0.02;
+a0 = a - 0.06;
+correct_values = [xs, ys, a];
 
-% Steg 3.2: Hitta konstanterna a˜, x˜0, y˜0 mha Gauss-Newton
-params = [x0, y0, a];
-x_tilde = x0 - 0.02;
-y_tilde = y0 + 0.04;
-a_tilde = a + 0.03;
+eta = trapets2d(integrand, -0.05, 0.05, -0.05, 0.05, 500);
 
-v_c = @(x,y, alpha) cos(w*(x.*cos(alpha) + y.*sin(alpha)));
+[x_tilde, y_tilde, a_tilde, iterations] = gaussnewton(eta, ic_vals, aa_vals, omega, x0, y0, a0);
+result = [x_tilde, y_tilde, a_tilde];
 
-[x, y, a] = gaussnewton(omega, eta_values, Ic_list, alpha_list, x_tilde, y_tilde, a_tilde);
+fprintf("x: %.4f\n", x_tilde)
+fprintf("y: %.4f\n", y_tilde)
+fprintf("a: %.4f\n", a_tilde)
 
-fprintf('x = ', x);
-fprintf('y = ', y);
-fprintf('a = ', a);
+%% Uppgift 3.4: Brus
+M = 15;
+noiselevel = linspace(0.01, 1);
+eta = trapets2d(integrand, -0.05, 0.05, -0.05, 0.05, 500);
+err_total = zeros(length(noiselevel), 1);
+err_x = zeros(length(noiselevel), 1);
+err_y = zeros(length(noiselevel), 1);
+err_a = zeros(length(noiselevel), 1);
 
+aa_vals = linspace(0, 2*pi, M)';
+ic_vals = zeros(M, 1);
 
-%Fortsätt... 
+for j = 1:length(noiselevel)
+    gnoise = g + max(abs(g)) * randn(size(g)) * noiselevel(j);
+    
+    for k = 1:M
+        ic_vals(k) = simpson(Bound.x, Bound.y, gnoise, aa_vals(k), omega, Bound.s);
+    end
+    
+    [x0, y0, a0] = gaussnewton(eta, ic_vals, aa_vals, omega, x_tilde, y_tilde, a_tilde);
+    
+    err_x(j) = abs(x0 - xs);
+    err_y(j) = abs(y0 - ys);
+    err_a(j) = abs(a0 - a);
+    
+    err_total(j) = sqrt(err_x(j)^2 + err_y(j)^2 + err_a(j)^2);
+end
+
+figure;
+subplot(2, 1, 1);
+plot(noiselevel, err_total, '-');
+xlabel('Noiselevel');
+ylabel('Totalt fel (euk.)');
+title('Totalt fel');
+
+subplot(2, 1, 2);
+plot(noiselevel, err_x, '-', noiselevel, err_y, '--', noiselevel, err_a, '-.');
+legend('Fel i x', 'Fel i y', 'Fel i a', 'Location', 'best');
+xlabel('Noiselevel');
+ylabel('Fel');
+title('Felet i varje parameter');
