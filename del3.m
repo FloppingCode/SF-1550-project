@@ -8,8 +8,8 @@ f2 = @(x, a) cos(a*x);
 integrand = @(x,y,a) S0(x,y).*f2(x, a);
 
 for a = linspace(0, 2*pi, 5) 
-    eta = trapets2d(integrand, -0.5,0.5,-0.5,0.5, 500);
-    %disp(eta)
+    eta = trapets2d(integrand, -0.5,0.5,-0.5,0.5, 500, a);
+    disp(eta)
 end
 
 %% Uppgift 3.2: Beräkna g
@@ -18,10 +18,11 @@ N = 500;
 xs  = 0.6;
 ys  = 0.2;
 a = 10;
+omega = 19;
 
-S = @(x,y) a * S0(x-x0,y-ys);
+S = @(x,y) a * S0(x-xs,y-ys);
 
-[Bound,Sol]=hhsolver(w,S,N); 
+[Bound,Sol]=hhsolver(omega,S,N); 
 g = Bound.un;
 
 %disp(g)
@@ -29,10 +30,10 @@ g = Bound.un;
 % 3.3a: Beräkna Ic mha numerisk integration
 % Definiera funktioner
 S0 = @(x,y) cos(20.*sqrt(x.^2+y.^2)).*exp(-1000.*(x.^2+y.^2));
-vc = @(x,y,alpha) cos(omega*(x.*cos(alpha) + y.*sin(alpha)));
-f2 = @(x, alpha) cos(alpha*x);
+vc = @(x,y,a) cos(omega*(x.*cos(a) + y.*sin(a)));
+f2 = @(x, a) cos(a*x);
 
-integrand = @(x, y) f2(x, alpha) .* S0(x, y);
+integrand = @(x, y, a) f2(x, a) .* S0(x, y);
 
 M = 13;
 aa_vals = linspace(0, 2*pi, M)';
@@ -41,15 +42,15 @@ for i = 1:M
     ic_vals(i) = simpson(Bound.x, Bound.y, g, aa_vals(i), omega, Bound.s);
 end
 
-eta = trapets2d(integrand, -0.05, 0.05, -0.05, 0.05, 700);
+eta = trapets2d(integrand, -0.05, 0.05, -0.05, 0.05, 700, 10);
 
 % Anpassa med Gauss-Newton
 x0 = xs + 0.03;
 y0 = ys - 0.02;
-a0 = a - 0.06;
+a0 = a - 0.04;
 correct_values = [xs, ys, a];
 
-eta = trapets2d(integrand, -0.05, 0.05, -0.05, 0.05, 500);
+eta = trapets2d(integrand, -0.05, 0.05, -0.05, 0.05, 500, a);
 
 [x_tilde, y_tilde, a_tilde, iterations] = gaussnewton(eta, ic_vals, aa_vals, omega, x0, y0, a0);
 result = [x_tilde, y_tilde, a_tilde];
@@ -58,10 +59,10 @@ fprintf("x: %.4f\n", x_tilde)
 fprintf("y: %.4f\n", y_tilde)
 fprintf("a: %.4f\n", a_tilde)
 
-%% Uppgift 3.4: Brus
+% Uppgift 3.4: Brus
 M = 15;
 noiselevel = linspace(0.01, 1);
-eta = trapets2d(integrand, -0.05, 0.05, -0.05, 0.05, 500);
+eta = trapets2d(integrand, -0.05, 0.05, -0.05, 0.05, 500, a);
 err_total = zeros(length(noiselevel), 1);
 err_x = zeros(length(noiselevel), 1);
 err_y = zeros(length(noiselevel), 1);
