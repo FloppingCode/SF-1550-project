@@ -100,3 +100,19 @@ legend('Fel i x', 'Fel i y', 'Fel i a', 'Location', 'best');
 xlabel('Noiselevel');
 ylabel('Fel');
 title('Felet i varje parameter');
+
+% Uppgift 3.5: 
+omega = 19;
+
+ic1_diff = central_diff(Bound.x, Bound.y, g, pi/2, omega, Bound.s, 1e-8);
+ic2_diff = central_diff(Bound.x, Bound.y, g, 0, omega, Bound.s, 1e-5);
+is1 = simpson2(Bound.x, Bound.y, g, pi/2, omega, Bound.s);
+is2 = simpson2(Bound.x, Bound.y, g, 0, omega, Bound.s);
+ic1 = simpson(Bound.x, Bound.y, g, 0, omega, Bound.s);
+
+x0_improved = ic1_diff / (omega*is1);
+y0_improved =  -1 * (ic2_diff / (w*is2));
+a0_improved = sqrt(ic1^2+is2^2) * 1/eta;
+fprintf("Bättre x0: %f\n", x0_improved)
+fprintf("Bättre y0: %f\n", y0_improved)
+fprintf("Bättre a: %f\n", a0_improved)
