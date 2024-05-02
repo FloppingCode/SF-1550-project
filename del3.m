@@ -111,7 +111,7 @@ is2 = simpson2(Bound.x, Bound.y, g, 0, omega, Bound.s);
 ic1 = simpson(Bound.x, Bound.y, g, 0, omega, Bound.s);
 
 x0_improved = ic1_diff / (omega*is1);
-y0_improved =  -1 * (ic2_diff / (w*is2));
+y0_improved =  -1 * (ic2_diff / (omega*is2));
 a0_improved = sqrt(ic1^2+is2^2) * 1/eta;
 fprintf("Bättre x0: %f\n", x0_improved)
 fprintf("Bättre y0: %f\n", y0_improved)
