@@ -79,21 +79,13 @@ noise_error(Bound, g, omega, eta, x0, y0, a0, x_tilde, y_tilde, a_tilde);
 
 % Uppgift 3.5: 
 omega = 19;
-
-ic1_diff = central_diff(Bound.x, Bound.y, g, pi/2, omega, Bound.s, 1e-8);
-ic2_diff = central_diff(Bound.x, Bound.y, g, 0, omega, Bound.s, 1e-5);
-is1 = simpson2(Bound.x, Bound.y, g, pi/2, omega, Bound.s);
-is2 = simpson2(Bound.x, Bound.y, g, 0, omega, Bound.s);
-ic1 = simpson(Bound.x, Bound.y, g, 0, omega, Bound.s);
-
-x0_improved = ic1_diff / (omega*is1);
-y0_improved =  -1 * (ic2_diff / (omega*is2));
-a0_improved = sqrt(ic1^2+is2^2) * 1/eta;
+[x0_improved, y0_improved, a0_improved] = generate_guesses(Bound, omega, eta);
 fprintf("Bättre x0: %f\n", x0_improved)
 fprintf("Bättre y0: %f\n", y0_improved)
 fprintf("Bättre a0: %f\n", a0_improved)
 
 noise_error(Bound, g, omega, eta, x0_improved, y0_improved, a0_improved, x_tilde, y_tilde, a_tilde);
+
 
 %% 3.6 Hitta källor
 eta = 0.00237;
