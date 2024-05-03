@@ -73,9 +73,24 @@ legend("Anpassade värden", "Förväntade värden")
 xlabel("0 < \alpha < 2\pi")
 ylabel("VL/HL")
 
+
 % Uppgift 3.4: Brus
 
-noise_error(Bound, g, omega, eta, x0, y0, a0, x_tilde, y_tilde, a_tilde);
+[noiselevel, err_total, err_x, err_y, err_a] = noise_error(Bound, g, omega, eta, x0, y0, a0, x_tilde, y_tilde, a_tilde);
+
+figure;
+subplot(2, 1, 1);
+plot(noiselevel, err_total, '-');
+xlabel('Noiselevel');
+ylabel('Totalt fel (euk.)');
+title('Totalt fel');
+
+subplot(2, 1, 2);
+plot(noiselevel, err_x, '-', noiselevel, err_y, '--', noiselevel, err_a, '-.');
+legend('Fel i x', 'Fel i y', 'Fel i a', 'Location', 'best');
+xlabel('Noiselevel');
+ylabel('Fel');
+title('Felet i varje parameter');
 
 % Uppgift 3.5: 
 omega = 19;
@@ -84,8 +99,21 @@ fprintf("Bättre x0: %f\n", x0_improved)
 fprintf("Bättre y0: %f\n", y0_improved)
 fprintf("Bättre a0: %f\n", a0_improved)
 
-noise_error(Bound, g, omega, eta, x0_improved, y0_improved, a0_improved, x_tilde, y_tilde, a_tilde);
+[noiselevel, err_total, err_x, err_y, err_a] = noise_error(Bound, g, omega, eta, x0_improved, y0_improved, a0_improved, x_tilde, y_tilde, a_tilde);
 
+figure;
+subplot(2, 1, 1);
+plot(noiselevel, err_total, '-');
+xlabel('Noiselevel');
+ylabel('Totalt fel (euk.)');
+title('Totalt fel');
+
+subplot(2, 1, 2);
+plot(noiselevel, err_x, '-', noiselevel, err_y, '--', noiselevel, err_a, '-.');
+legend('Fel i x', 'Fel i y', 'Fel i a', 'Location', 'best');
+xlabel('Noiselevel');
+ylabel('Fel');
+title('Felet i varje parameter');
 
 %% 3.6 Hitta källor
 eta = 0.00237;
